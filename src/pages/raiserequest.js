@@ -1,6 +1,9 @@
 import MenuBar from "@/components/MenuBar";
 import PageHeading from "@/components/PageHeading";
-import React, { useState } from "react";
+import { getDropDownByKey } from "@/services/dropdown.service";
+import { getItemsByDepartmentId } from "@/services/item.service";
+import { getUsersUsingApi } from "@/services/user.service";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button, Container, Form, Table } from "react-bootstrap";
 
 const RaiseRequest = () => {
@@ -9,6 +12,7 @@ const RaiseRequest = () => {
     useState(""); /** Username remain fix for per request.*/
   const [department, setDepartment] =
     useState(""); /** Department remain fix for per request.*/
+  const [departmentId, setDepartmentId] = useState("");
 
   const [data, setData] = useState(
     []
@@ -18,14 +22,17 @@ const RaiseRequest = () => {
     { item: "", count: 0 },
   ]); /** Items contains all data related to added dynamic items. */
 
+  /** States for api data storages */
+  const [users, setUsers] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [products, setProducts] = useState([]);
+
   /** Handle dynamic added items state */
   const handleAddItem = () => {
     setItems([...items, { item: "", count: 1 }]);
-    console.log("items------------->", items);
     for (let i = 0; i < items.length; i++) {
       const { count, item } = items[i];
       console.log({ username, department, item, count });
-
       //   setData([...data, { username, department, item, count }]);
     }
   };
@@ -43,7 +50,6 @@ const RaiseRequest = () => {
   //
   const handleItemChange = (index, item) => {
     const updatedItems = [...items];
-    let prevState;
     updatedItems[index].item = item;
     setItems(updatedItems);
 
@@ -67,7 +73,9 @@ const RaiseRequest = () => {
 
   /** Handle single item add operation that is used to add item in table. */
   const handleAddSingleItem = (index) => {
-    const { item, count } = items[index];
+    const { item, count, _id } = items[index];
+
+    console.log(item, count, _id);
 
     if (!username || !department) {
       alert("Sorry please select valid username and department...");
@@ -78,6 +86,7 @@ const RaiseRequest = () => {
       alert("Sorry you can't add empty item...");
       return;
     }
+
     const indexT = data.findIndex((obj) => obj.item === item);
     if (indexT > -1) {
       const updatedItems = data.map((obj) => {
@@ -86,11 +95,57 @@ const RaiseRequest = () => {
         }
         return obj;
       });
+
       setData(updatedItems);
     } else {
       setData([...data, { username, department, item, count }]);
     }
   };
+
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        const apiResponse = await getUsersUsingApi();
+        console.log("api", apiResponse);
+        if (apiResponse.status === 200) {
+          console.log(apiResponse.data.data);
+          setUsers(apiResponse.data.data);
+        }
+      } catch (error) {
+        alert(error);
+      }
+    };
+    getUsers();
+  }, []);
+
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const apiResponse = await getItemsByDepartmentId(departmentId);
+
+        console.log("apiResponse", apiResponse);
+        if (apiResponse.status === 200) {
+          console.log(apiResponse.data.data);
+          setProducts(apiResponse.data.data);
+        }
+      } catch (error) {
+        alert(error);
+      }
+    };
+    departmentId ? getProducts() : null;
+  }, [username, department]);
+
+  function setUserNameAndDepartmentName(userId) {
+    if (userId) {
+      const [userInfo] = users.filter((user) => user._id === userId);
+      setUsername(userId);
+      setDepartment(userInfo.departmentId.value);
+      setDepartmentId(userInfo.departmentId._id);
+    } else {
+      setUsername("");
+      setDepartment("");
+    }
+  }
 
   /** Handle submit request operation */
   const submitRequest = () => {
@@ -102,7 +157,6 @@ const RaiseRequest = () => {
     <>
       <MenuBar />
       <PageHeading pageHeading={"Raise New Request"} />
-
       <Container style={{ width: "80%" }}>
         <Form>
           <Form.Group>
@@ -110,27 +164,28 @@ const RaiseRequest = () => {
             <Form.Control
               as="select"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => setUserNameAndDepartmentName(e.target.value)}
             >
               <option value="">Select...</option>
-              <option value="Ajay">Ajay</option>
-              <option value="Shivam">Shivam</option>
+              {users.map((user) => {
+                return (
+                  <option value={user._id} key={user._id}>
+                    {user.userName}
+                  </option>
+                );
+              })}
               {/* Add username options */}
             </Form.Control>
           </Form.Group>
 
           <Form.Group style={{ marginTop: "10px" }}>
-            <Form.Label>Select Department:</Form.Label>
+            <Form.Label>Department:</Form.Label>
             <Form.Control
-              as="select"
+              as="input"
               value={department}
+              disabled
               onChange={(e) => setDepartment(e.target.value)}
-            >
-              <option value="">Select...</option>
-              <option value="Hr">Hr</option>
-              <option value="Php">Php</option>
-              {/* Add department options */}
-            </Form.Control>
+            ></Form.Control>
           </Form.Group>
 
           <Form.Group style={{ marginTop: "10px" }}>
@@ -140,13 +195,17 @@ const RaiseRequest = () => {
                   <Form.Label>Select Item:</Form.Label>
                   <Form.Control
                     as="select"
-                    value={item.item}
+                    value={item.itemName}
                     onChange={(e) => handleItemChange(index, e.target.value)}
                   >
                     <option value="">Select...</option>
-                    <option value="Laptops">Laptops</option>
-                    <option value="Mouse">Mouse</option>
-                    <option value="Water-Bottles">Water-Bottles</option>
+                    {products?.map((product) => {
+                      return (
+                        <option value={product._id} key={product._id}>
+                          {product.itemName}
+                        </option>
+                      );
+                    })}
                     {/* Add item options */}
                   </Form.Control>
                 </Form.Group>
@@ -181,14 +240,6 @@ const RaiseRequest = () => {
                     >
                       Remove Item
                     </Button>
-                    {/* {index !== 0 && (
-                      <Button
-                        variant="danger"
-                        onClick={() => handleRemoveItem(index)}
-                      >
-                        Remove Item
-                      </Button>
-                    )} */}
                   </div>
                 </Form.Group>
               </div>
