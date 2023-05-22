@@ -1,8 +1,13 @@
 a {
   text-decoration: none !important;
   color: #fff !important;
-  margin-right: 20px;
+  padding: 10px;
   font-size: 20px;
+}
+
+a:hover {
+  background-color: #716d6d;
+  border-radius: 10px;
 }
 
 .card {
