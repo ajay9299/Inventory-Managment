@@ -51,7 +51,7 @@ const ModalBox = ({
   }
 
   return (
-    <Modal show={showModal} onHide={onClose} centered>
+    <Modal show={showModal} onHide={handleClose} centered>
       <Modal.Header closeButton>
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
