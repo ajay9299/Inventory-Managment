@@ -164,12 +164,15 @@ const RaiseRequest = () => {
             <Form.Control
               as="select"
               value={username}
-              onChange={(e) => setUserNameAndDepartmentName(e.target.value)}
+              onChange={(e) => {
+                console.log("Event", e);
+                setUserNameAndDepartmentName(e.target.value);
+              }}
             >
               <option value="">Select...</option>
               {users.map((user) => {
                 return (
-                  <option value={user._id} key={user._id}>
+                  <option value={user._id} name={user.userName} key={user._id}>
                     {user.userName}
                   </option>
                 );
@@ -274,7 +277,7 @@ const RaiseRequest = () => {
           <tbody>
             {data.map((item, index) => (
               <tr key={index}>
-                <td>{item.username}</td>
+                <td>{username}</td>
                 <td>{item.department}</td>
                 <td>{item.item}</td>
                 <td>{item.count}</td>
