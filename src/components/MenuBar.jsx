@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 import { Nav, Navbar } from "react-bootstrap";
 const MenuBar = () => {
@@ -12,48 +13,12 @@ const MenuBar = () => {
           Inventory Management System
         </Navbar.Brand>
         <Nav className="mr-auto">
-          <Nav.Link href="/" style={{ fontSize: "20px", paddingRight: "20px" }}>
-            Home
-          </Nav.Link>
-          <Nav.Link
-            href="/raiserequest"
-            style={{ fontSize: "20px", paddingRight: "20px" }}
-          >
-            Raise Request
-          </Nav.Link>
-          <Nav.Link
-            href="#my-requests"
-            style={{ fontSize: "20px", paddingRight: "20px" }}
-          >
-            My Requests
-          </Nav.Link>
-          <Nav.Link
-            href="#my-profile"
-            style={{ fontSize: "20px", paddingRight: "20px" }}
-          >
-            My Profile
-          </Nav.Link>
-          <Nav.Link
-            href="/adddepartment"
-            style={{ fontSize: "20px", paddingRight: "20px" }}
-          >
-            Add Department
-          </Nav.Link>
-          <Nav.Link
-            href="/adduser"
-            style={{ fontSize: "20px", paddingRight: "20px" }}
-          >
-            Add User
-          </Nav.Link>
-          <Nav.Link href="/adddepartmenthead" style={{ fontSize: "20px", paddingRight: "20px" }}>
-            Add Department Head
-          </Nav.Link>
-          <Nav.Link
-            href="/store"
-            style={{ fontSize: "20px", paddingRight: "20px" }}
-          >
-            Store
-          </Nav.Link>
+          <Link href="/">Home</Link>
+          <Link href="/raiserequest">Raise Request</Link>
+          {/* <Link href="/adddepartment">Add Department</Link>
+          <Link href="/adduser">Add User</Link>
+          <Link href="/adddepartmenthead">Add Department Head</Link> */}
+          <Link href="/store">Store</Link>
         </Nav>
       </Navbar>
     </>
