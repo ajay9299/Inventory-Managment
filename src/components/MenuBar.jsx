@@ -1,5 +1,6 @@
 import React from "react";
 import { Nav, Navbar } from "react-bootstrap";
+
 const MenuBar = () => {
   return (
     <>
@@ -22,17 +23,12 @@ const MenuBar = () => {
             Raise Request
           </Nav.Link>
           <Nav.Link
-            href="#my-requests"
+            href="/mydashboard"
             style={{ fontSize: "20px", paddingRight: "20px" }}
           >
-            My Requests
+            My Dashboard
           </Nav.Link>
-          <Nav.Link
-            href="#my-profile"
-            style={{ fontSize: "20px", paddingRight: "20px" }}
-          >
-            My Profile
-          </Nav.Link>
+
           <Nav.Link
             href="/adddepartment"
             style={{ fontSize: "20px", paddingRight: "20px" }}
@@ -45,7 +41,10 @@ const MenuBar = () => {
           >
             Add User
           </Nav.Link>
-          <Nav.Link href="/adddepartmenthead" style={{ fontSize: "20px", paddingRight: "20px" }}>
+          <Nav.Link
+            href="/adddepartmenthead"
+            style={{ fontSize: "20px", paddingRight: "20px" }}
+          >
             Add Department Head
           </Nav.Link>
           <Nav.Link
