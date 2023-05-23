@@ -5,7 +5,7 @@ a {
   font-size: 20px;
 }
 
-a:hover {
+.navbar-nav > a:hover {
   background-color: #716d6d;
   border-radius: 10px;
 }

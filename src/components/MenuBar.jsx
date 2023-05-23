@@ -15,9 +15,6 @@ const MenuBar = () => {
         <Nav className="mr-auto">
           <Link href="/">Home</Link>
           <Link href="/raiserequest">Raise Request</Link>
-          {/* <Link href="/adddepartment">Add Department</Link>
-          <Link href="/adduser">Add User</Link>
-          <Link href="/adddepartmenthead">Add Department Head</Link> */}
           <Link href="/store">Store</Link>
         </Nav>
       </Navbar>
