@@ -18,11 +18,22 @@ export const createUser = async (userName, departmentId, role) => {
 };
 
 /** get users */
-export const getUsersUsingApi = async () => {
+export const getUsersService = async () => {
   let config = {
     method: "get",
     maxBodyLength: Infinity,
     url: `${process.env.NEXT_PUBLIC_API_BASE_URL}users`,
+    headers: {},
+  };
+  return await axios.request(config);
+};
+
+/** Delete user using userId*/
+export const deleteUser = async (userId) => {
+  let config = {
+    method: "delete",
+    maxBodyLength: Infinity,
+    url: `${process.env.NEXT_PUBLIC_API_BASE_URL}users/${userId}`,
     headers: {},
   };
   return await axios.request(config);

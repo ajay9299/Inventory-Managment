@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 
@@ -8,6 +7,7 @@ const ModalBox = ({
   onClose,
   title,
   body,
+  buttonColor,
   actionLabel,
   secondaryActionLabel,
   secondaryAction,
@@ -66,7 +66,11 @@ const ModalBox = ({
             {secondaryActionLabel}
           </Button>
         )}
-        <Button disabled={disabled} onClick={handleSubmit}>
+        <Button
+          disabled={disabled}
+          className={buttonColor}
+          onClick={handleSubmit}
+        >
           {actionLabel}
         </Button>
       </Modal.Footer>

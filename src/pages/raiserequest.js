@@ -1,9 +1,8 @@
 import MenuBar from "@/components/MenuBar";
 import PageHeading from "@/components/PageHeading";
-import { getDropDownByKey } from "@/services/dropdown.service";
 import { getItemsByDepartmentId } from "@/services/item.service";
-import { getUsersUsingApi } from "@/services/user.service";
-import React, { useCallback, useEffect, useState } from "react";
+import { getUsersService } from "@/services/user.service";
+import React, { useEffect, useState } from "react";
 import { Button, Container, Form, Table } from "react-bootstrap";
 
 const RaiseRequest = () => {
@@ -105,7 +104,7 @@ const RaiseRequest = () => {
   useEffect(() => {
     const getUsers = async () => {
       try {
-        const apiResponse = await getUsersUsingApi();
+        const apiResponse = await getUsersService();
         console.log("api", apiResponse);
         if (apiResponse.status === 200) {
           console.log(apiResponse.data.data);
