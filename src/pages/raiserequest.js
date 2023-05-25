@@ -25,6 +25,7 @@ const RaiseRequest = () => {
   const [users, setUsers] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [products, setProducts] = useState([]);
+  const [userObject, setUserObject] = useState({});
 
   /** Handle dynamic added items state */
   const handleAddItem = () => {
@@ -102,6 +103,15 @@ const RaiseRequest = () => {
   };
 
   useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("userName");
+    const departmentId = JSON.parse(localStorage.getItem("departmentId"));
+    setUserObject({
+      value: userId,
+      label: userName,
+      departmentId: departmentId,
+    });
+
     const getUsers = async () => {
       try {
         const apiResponse = await getUsersService();
@@ -154,7 +164,7 @@ const RaiseRequest = () => {
 
   return (
     <>
-      <MenuBar  />
+      <MenuBar loadUser={userObject} />
       <PageHeading pageHeading={"Raise New Request"} />
       <Container style={{ width: "80%" }}>
         <Form>

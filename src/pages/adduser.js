@@ -47,7 +47,7 @@ const AddUser = () => {
     departmentId: "",
     departmentName: "",
   });
-
+  const [userObject, setUserObject] = useState({});
   /** Fetch users */
   async function getUsers() {
     const apiResponse = await getUsersService();
@@ -57,6 +57,14 @@ const AddUser = () => {
   }
   useEffect(() => {
     getUsers();
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("userName");
+    const departmentId = JSON.parse(localStorage.getItem("departmentId"));
+    setUserObject({
+      value: userId,
+      label: userName,
+      departmentId: departmentId,
+    });
   }, []);
 
   /** Fetch departments */
@@ -230,7 +238,7 @@ const AddUser = () => {
 
   return (
     <>
-      <MenuBar loadUser={true} />
+      <MenuBar loadUser={userObject} />
       <ToastContainer />
       <ModalBox
         disabled={isLoading}

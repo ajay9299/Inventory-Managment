@@ -29,6 +29,7 @@ const Store = () => {
     itemId: "",
     itemName: "",
   });
+  const [userObject, setUserObject] = useState({});
 
   async function addNewItem() {
     try {
@@ -167,11 +168,19 @@ const Store = () => {
 
   useEffect(() => {
     getItems();
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("userName");
+    const departmentId = JSON.parse(localStorage.getItem("departmentId"));
+    setUserObject({
+      value: userId,
+      label: userName,
+      departmentId: departmentId,
+    });
   }, []);
 
   return (
     <>
-      <MenuBar />
+      <MenuBar loadUser={userObject} />
       <ToastContainer />
       <ModalBox
         disabled={isLoading}

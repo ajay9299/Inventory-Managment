@@ -42,6 +42,7 @@ const AddDepartment = () => {
     departmentName: "",
     departmentHeadId: "",
   });
+  const [userObject, setUserObject] = useState({});
 
   const renderTooltip = (text) => <Tooltip id="tooltip">{text}</Tooltip>;
 
@@ -57,6 +58,14 @@ const AddDepartment = () => {
   }
   useEffect(() => {
     getUsers();
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("userName");
+    const departmentId = JSON.parse(localStorage.getItem("departmentId"));
+    setUserObject({
+      value: userId,
+      label: userName,
+      departmentId: departmentId,
+    });
   }, []);
 
   async function addNewDepartment() {
@@ -247,7 +256,7 @@ const AddDepartment = () => {
 
   return (
     <>
-      <MenuBar />
+      <MenuBar loadUser={userObject} />
       {!isLoaderLoading ? (
         <Loader />
       ) : (
