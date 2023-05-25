@@ -10,6 +10,7 @@ import {
   createUser,
   deleteUser,
   getUsersService,
+  updateUserService,
 } from "@/services/user.service";
 import React, { useEffect, useState } from "react";
 import {
@@ -19,6 +20,7 @@ import {
   OverlayTrigger,
   Tooltip,
 } from "react-bootstrap";
+import { ToastContainer, toast } from "react-toastify";
 
 const AddUser = () => {
   const [show, setShow] = useState(false);
@@ -35,11 +37,15 @@ const AddUser = () => {
   const [tableHeading, setTableHeading] = useState("Registered Users");
   const [userName, setUserName] = useState("");
   const [department, setDepartment] = useState("");
+
   const [departments, setDepartments] = useState([]);
   const [users, setUsers] = useState([]);
+
   const [selectedUserInfo, setSelectedUserInfo] = useState({
+    userId: "",
     userName: "",
-    department: "",
+    departmentId: "",
+    departmentName: "",
   });
 
   /** Fetch users */
@@ -66,13 +72,17 @@ const AddUser = () => {
 
   async function addNewUser() {
     try {
-      console.log(userName, department, "user");
-      const apiResponse = await createUser(userName, department, "user");
+      console.log("userName---->", userName, "departmentId---->", department);
+      const apiResponse = await createUser(userName, department);
       if (apiResponse.status === 200) {
-        alert("New user created successfully...");
+        toast("New user created successfully", {
+          icon: true,
+          type: "success",
+        });
       }
       setUserName("");
       setDepartment("");
+      getUsers();
     } catch (error) {
       alert(error);
     }
@@ -81,6 +91,7 @@ const AddUser = () => {
   const renderTooltip = (text) => <Tooltip id="tooltip">{text}</Tooltip>;
 
   async function handleDelete(userId) {
+    console.log("<><><><>", userId);
     const apiResponse = await deleteUser(userId);
     if (apiResponse.status === 204) {
       toast("User deleted successfully", {
@@ -112,27 +123,23 @@ const AddUser = () => {
         <Form.Label>Select Department head</Form.Label>
         <Form.Control
           as="select"
-          value={"" || selectedUserInfo.department}
+          value={"" || selectedUserInfo.departmentId}
           onChange={(e) => {
             console.log("Event", e);
             setSelectedUserInfo({
               ...selectedUserInfo,
-              department: e.target.value,
+              departmentId: e.target.value,
             });
           }}
         >
           <option value="">Select...</option>
-          <option value={selectedUserInfo.department}>
-            {selectedUserInfo.department}
-          </option>
-          {/* {users.map((user) => {
-                return (
-                  <option value={user._id} name={user.userName} key={user._id}>
-                    {user.userName}
-                  </option>
-                );
-              })} */}
-          {/* Add username options */}
+          {departments.map((department) => {
+            return (
+              <option value={department._id} key={department._id}>
+                {department.departmentName}
+              </option>
+            );
+          })}
         </Form.Control>
       </Form.Group>
     </>
@@ -144,30 +151,29 @@ const AddUser = () => {
     </div>
   );
 
-  async function onUpdate(userId, department, userName) {
+  async function onUpdate(userId, userName, departmentId) {
     setShow(true);
-    setSelectDepartmentInfo({ userId, department, userName });
+    console.log({ userId, departmentId, userName });
+    setSelectedUserInfo({ userId, departmentId, userName });
   }
 
-  async function handleUpdate(userId, department, userName) {
-    // const apiResponse = await updateItem(
-    //   departmentId,
-    //   departmentName,
-    //   departmentHead
-    // );
-    // if (apiResponse.status === 200) {
-    //   toast("Item updated successfully");
-    //   getItems();
-    // }
-    // setShow(false);
+  async function handleUpdate(userId, departmentId, userName) {
+    const apiResponse = await updateUserService(userId, userName, departmentId);
+    if (apiResponse.status === 200) {
+      toast("User updated successfully");
+      getUsers();
+    }
+    setShow(false);
   }
 
   /** Table body*/
+
+  console.log("users", users);
   let tableBody = users?.map((user, index) => (
     <tr key={index}>
       <td>{index + 1}</td>
       <td>{user.userName}</td>
-      <td>{user.department}</td>
+      <td>{user.departmentId.departmentName}</td>
 
       <td style={{ display: "flex", justifyContent: "flex-end" }}>
         <OverlayTrigger
@@ -178,7 +184,7 @@ const AddUser = () => {
           <Button
             variant="primary"
             onClick={() => {
-              onUpdate(user._id, user.departmentName, user.departmentHead);
+              onUpdate(user._id, user.userName, user.departmentId._id);
               setButtonClicked("update");
             }}
             style={{ marginRight: "10px" }}
@@ -195,7 +201,7 @@ const AddUser = () => {
           <Button
             variant="danger"
             onClick={() => {
-              onUpdate(user._id, user.userName, user.department);
+              onUpdate(user._id, user.userName, user.departmentId._id);
               setButtonClicked("delete");
             }}
             style={{ marginRight: "10px" }}
@@ -211,7 +217,7 @@ const AddUser = () => {
           <Button
             variant="info"
             onClick={() => {
-              onInfo(department.id);
+              onUpdate(user._id, user.userName, user.departmentId._id);
               setButtonClicked("info");
             }}
           >
@@ -224,7 +230,8 @@ const AddUser = () => {
 
   return (
     <>
-      <MenuBar />
+      <MenuBar loadUser={true} />
+      <ToastContainer />
       <ModalBox
         disabled={isLoading}
         isOpen={show}
@@ -255,12 +262,12 @@ const AddUser = () => {
         onSubmit={() =>
           buttonClicked === "update"
             ? handleUpdate(
-                selectedDepartmentInfo.departmentId,
-                selectedDepartmentInfo.departmentName,
-                departmentHead
+                selectedUserInfo.userId,
+                selectedUserInfo.departmentId,
+                selectedUserInfo.userName
               )
             : buttonClicked === "delete"
-            ? handleDelete(selectedDepartmentInfo.departmentId)
+            ? handleDelete(selectedUserInfo.userId)
             : "btn btn-info"
         }
         body={

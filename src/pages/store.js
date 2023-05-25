@@ -49,7 +49,6 @@ const Store = () => {
   }
 
   async function handleDelete(itemId) {
-    console.log(">>>>>>>>>>>>>>>>>>>>.", itemId);
     const apiResponse = await deleteItem(itemId);
     if (apiResponse.status === 204) {
       toast("Item deleted successfully", {

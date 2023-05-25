@@ -1,10 +1,9 @@
 import axios from "axios";
 
 /** Create new user based on userName , departmentId and role*/
-export const createUser = async (userName, departmentId, role) => {
+export const createUser = async (userName, departmentId) => {
   let data = JSON.stringify({
     userName,
-    role,
     departmentId,
   });
   let config = {
@@ -35,6 +34,24 @@ export const deleteUser = async (userId) => {
     maxBodyLength: Infinity,
     url: `${process.env.NEXT_PUBLIC_API_BASE_URL}users/${userId}`,
     headers: {},
+  };
+  return await axios.request(config);
+};
+
+/** Update user using userId*/
+export const updateUserService = async (userId, userName, departmentId) => {
+  let data = JSON.stringify({
+    userName,
+    departmentId,
+  });
+
+  console.log(data, departmentId);
+  let config = {
+    method: "patch",
+    maxBodyLength: Infinity,
+    url: `${process.env.NEXT_PUBLIC_API_BASE_URL}users/${userId}`,
+    headers: { "Content-Type": "application/json" },
+    data: data,
   };
   return await axios.request(config);
 };

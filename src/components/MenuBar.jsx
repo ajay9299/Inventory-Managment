@@ -1,10 +1,14 @@
 import { getUsersService } from "@/services/user.service";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { Container, Nav, NavDropdown, Navbar } from "react-bootstrap";
+import { Container, Nav, Navbar } from "react-bootstrap";
 import Select from "react-select";
-const MenuBar = () => {
+const MenuBar = (loadUser) => {
   const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    getUsers();
+  }, [loadUser]);
 
   /** Fetch users */
   async function getUsers() {
@@ -27,6 +31,7 @@ const MenuBar = () => {
 
   function loginUser(selectedUser) {
     console.log(selectedUser.value);
+    localStorage.setItem("userId", selectedUser.value);
   }
 
   const MySelect = () => (
