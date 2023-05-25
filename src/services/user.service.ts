@@ -17,11 +17,13 @@ export const createUser = async (userName, departmentId) => {
 };
 
 /** get users */
-export const getUsersService = async () => {
+export const getUsersService = async (page) => {
   let config = {
     method: "get",
     maxBodyLength: Infinity,
-    url: `${process.env.NEXT_PUBLIC_API_BASE_URL}users`,
+    url: `${
+      process.env.NEXT_PUBLIC_API_BASE_URL
+    }users?page=${page}&limit=${5}`,
     headers: {},
   };
   return await axios.request(config);

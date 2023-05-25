@@ -1,3 +1,4 @@
+import Loader from "@/components/Loader";
 import MenuBar from "@/components/MenuBar";
 import PageHeading from "@/components/PageHeading";
 import TableComponent from "@/components/Table";
@@ -18,6 +19,7 @@ import {
   Container,
   Form,
   OverlayTrigger,
+  Pagination,
   Tooltip,
 } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
@@ -26,7 +28,7 @@ const AddUser = () => {
   const [show, setShow] = useState(false);
   const [buttonClicked, setButtonClicked] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [isLoaderLoading, setLoaderLoading] = useState(false);
   const [column, setColumn] = useState([
     "S.No.",
     "Username",
@@ -48,11 +50,17 @@ const AddUser = () => {
     departmentName: "",
   });
   const [userObject, setUserObject] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(100);
+
   /** Fetch users */
-  async function getUsers() {
-    const apiResponse = await getUsersService();
+  async function getUsers(currentPage) {
+    const apiResponse = await getUsersService(currentPage);
     if (apiResponse.status === 200) {
       setUsers(apiResponse.data.data);
+      setTimeout(() => {
+        setLoaderLoading(true);
+      }, 1000);
     }
   }
   useEffect(() => {
@@ -80,7 +88,6 @@ const AddUser = () => {
 
   async function addNewUser() {
     try {
-      console.log("userName---->", userName, "departmentId---->", department);
       const apiResponse = await createUser(userName, department);
       if (apiResponse.status === 200) {
         toast("New user created successfully", {
@@ -90,7 +97,7 @@ const AddUser = () => {
       }
       setUserName("");
       setDepartment("");
-      getUsers();
+      getUsers(currentPage);
     } catch (error) {
       alert(error);
     }
@@ -99,14 +106,14 @@ const AddUser = () => {
   const renderTooltip = (text) => <Tooltip id="tooltip">{text}</Tooltip>;
 
   async function handleDelete(userId) {
-    console.log("<><><><>", userId);
     const apiResponse = await deleteUser(userId);
     if (apiResponse.status === 204) {
       toast("User deleted successfully", {
         icon: true,
         type: "success",
       });
-      getUsers();
+      setCurrentPage(currentPage);
+      getUsers(currentPage);
     }
     setShow(false);
   }
@@ -169,7 +176,8 @@ const AddUser = () => {
     const apiResponse = await updateUserService(userId, userName, departmentId);
     if (apiResponse.status === 200) {
       toast("User updated successfully");
-      getUsers();
+      setCurrentPage(currentPage);
+      getUsers(currentPage);
     }
     setShow(false);
   }
@@ -179,7 +187,7 @@ const AddUser = () => {
   console.log("users", users);
   let tableBody = users?.map((user, index) => (
     <tr key={index}>
-      <td>{index + 1}</td>
+      <td>{5 * (currentPage - 1) + 1 + index}</td>
       <td>{user.userName}</td>
       <td>{user.departmentId.departmentName}</td>
 
@@ -236,99 +244,143 @@ const AddUser = () => {
     </tr>
   ));
 
+  const handlePageChange = (pageNumber) => {
+    console.log("pageNumber", pageNumber);
+    setCurrentPage(pageNumber);
+    setLoaderLoading(false);
+    getUsers(pageNumber);
+  };
+
+  const renderPaginationItems = () => {
+    const items = [];
+    for (let pageNumber = 1; pageNumber <= 12; pageNumber++) {
+      items.push(
+        <Pagination.Item
+          key={pageNumber}
+          active={pageNumber === currentPage}
+          onClick={() => handlePageChange(pageNumber)}
+        >
+          {pageNumber}
+        </Pagination.Item>
+      );
+    }
+    return items;
+  };
+
+  const paginationBody = (
+    <>
+      <Pagination.Prev
+        disabled={currentPage === 1}
+        onClick={() => handlePageChange(currentPage - 1)}
+      />
+      {renderPaginationItems()}
+      <Pagination.Next
+        disabled={currentPage === totalPage}
+        onClick={() => handlePageChange(currentPage + 1)}
+      />
+    </>
+  );
+
   return (
     <>
       <MenuBar loadUser={userObject} />
-      <ToastContainer />
-      <ModalBox
-        disabled={isLoading}
-        isOpen={show}
-        title={
-          buttonClicked === "update"
-            ? "Edit Department"
-            : buttonClicked === "delete"
-            ? "Delete Department"
-            : "Info"
-        }
-        actionLabel={
-          buttonClicked === "update"
-            ? "Update"
-            : buttonClicked === "delete"
-            ? "Delete"
-            : "Info"
-        }
-        buttonColor={
-          buttonClicked === "update"
-            ? "btn btn-primary"
-            : buttonClicked === "delete"
-            ? "btn btn-danger"
-            : "btn btn-info"
-        }
-        secondaryActionLabel="Close"
-        secondaryAction={() => setShow(false)}
-        onClose={() => setShow(false)}
-        onSubmit={() =>
-          buttonClicked === "update"
-            ? handleUpdate(
-                selectedUserInfo.userId,
-                selectedUserInfo.departmentId,
-                selectedUserInfo.userName
-              )
-            : buttonClicked === "delete"
-            ? handleDelete(selectedUserInfo.userId)
-            : "btn btn-info"
-        }
-        body={
-          buttonClicked === "update"
-            ? bodyContent
-            : buttonClicked === "delete"
-            ? deleteBody
-            : "btn btn-info"
-        }
-      />
-      <PageHeading pageHeading={"Add New User"} />
-      <Container style={{ width: "80%" }}>
-        <Form>
-          <Form.Group>
-            <Form.Label>Username</Form.Label>
-            <Form.Control
-              as="input"
-              value={userName}
-              placeholder="Enter user name"
-              onChange={(e) => setUserName(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
-          <Form.Group style={{ marginTop: "10px" }}>
-            <Form.Label>Department:</Form.Label>
-            <Form.Control
-              as="select"
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-            >
-              <option value="">Select...</option>
-              {departments.map((department) => {
-                return (
-                  <option value={department._id} key={department._id}>
-                    {department.departmentName}
-                  </option>
-                );
-              })}
-            </Form.Control>
-          </Form.Group>
-          <Form.Group>
-            <div style={{ marginTop: "10px" }}>
-              <Button variant="secondary" onClick={() => addNewUser()}>
-                Add User
-              </Button>
-            </div>
-          </Form.Group>
-        </Form>
-        <TableComponent
-          tableHeading={tableHeading}
-          column={column}
-          tableBody={tableBody}
-        />
-      </Container>
+      {!isLoaderLoading ? (
+        <Loader />
+      ) : (
+        <>
+          <ToastContainer />
+          <ModalBox
+            disabled={isLoading}
+            isOpen={show}
+            title={
+              buttonClicked === "update"
+                ? "Edit Department"
+                : buttonClicked === "delete"
+                ? "Delete Department"
+                : "Info"
+            }
+            actionLabel={
+              buttonClicked === "update"
+                ? "Update"
+                : buttonClicked === "delete"
+                ? "Delete"
+                : "Info"
+            }
+            buttonColor={
+              buttonClicked === "update"
+                ? "btn btn-primary"
+                : buttonClicked === "delete"
+                ? "btn btn-danger"
+                : "btn btn-info"
+            }
+            secondaryActionLabel="Close"
+            secondaryAction={() => setShow(false)}
+            onClose={() => setShow(false)}
+            onSubmit={() =>
+              buttonClicked === "update"
+                ? handleUpdate(
+                    selectedUserInfo.userId,
+                    selectedUserInfo.departmentId,
+                    selectedUserInfo.userName
+                  )
+                : buttonClicked === "delete"
+                ? handleDelete(selectedUserInfo.userId)
+                : "btn btn-info"
+            }
+            body={
+              buttonClicked === "update"
+                ? bodyContent
+                : buttonClicked === "delete"
+                ? deleteBody
+                : "btn btn-info"
+            }
+          />
+          <PageHeading pageHeading={"Add New User"} />
+          <Container style={{ width: "80%" }}>
+            <Form>
+              <Form.Group>
+                <Form.Label>Username</Form.Label>
+                <Form.Control
+                  as="input"
+                  value={userName}
+                  placeholder="Enter user name"
+                  onChange={(e) => setUserName(e.target.value)}
+                ></Form.Control>
+              </Form.Group>
+              <Form.Group style={{ marginTop: "10px" }}>
+                <Form.Label>Department:</Form.Label>
+                <Form.Control
+                  as="select"
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                >
+                  <option value="">Select...</option>
+                  {departments.map((department) => {
+                    return (
+                      <option value={department._id} key={department._id}>
+                        {department.departmentName}
+                      </option>
+                    );
+                  })}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group>
+                <div style={{ marginTop: "10px" }}>
+                  <Button variant="secondary" onClick={() => addNewUser()}>
+                    Add User
+                  </Button>
+                </div>
+              </Form.Group>
+            </Form>
+            <TableComponent
+              tableHeading={tableHeading}
+              column={column}
+              tableBody={tableBody}
+              paginationBody={paginationBody}
+            />
+          </Container>
+        </>
+      )}
     </>
   );
 };

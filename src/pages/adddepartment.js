@@ -53,7 +53,7 @@ const AddDepartment = () => {
       setUsers(apiResponse.data.data);
       setTimeout(() => {
         setLoaderLoading(true);
-      }, 2000);
+      }, 1000);
     }
   }
   useEffect(() => {

@@ -65,17 +65,47 @@ const MenuBar = ({ loadUser }) => {
   );
   return (
     <>
-      <Navbar bg="dark" expand="lg" variant="dark">
+      <Navbar bg="dark" expand="lg" variant="dark" style={{}}>
         <Container>
-          <Link href="/">
+          <Link href="/" style={{ textDecoration: "none" }}>
             <Navbar.Brand>Inventory Management System</Navbar.Brand>
           </Link>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              <Link href="/">Home</Link>
-              <Link href="/raiserequest">Request</Link>
-              <Link href="/store">Store</Link>
+              <Link
+                href="/"
+                style={{
+                  fontSize: "20px",
+                  color: "#fff",
+                  padding: "10px",
+                  textDecoration: "none",
+                }}
+              >
+                Home
+              </Link>
+              <Link
+                href="/raiserequest"
+                style={{
+                  fontSize: "20px",
+                  color: "#fff",
+                  padding: "10px",
+                  textDecoration: "none",
+                }}
+              >
+                Request
+              </Link>
+              <Link
+                href="/store"
+                style={{
+                  fontSize: "20px",
+                  color: "#fff",
+                  padding: "10px",
+                  textDecoration: "none",
+                }}
+              >
+                Store
+              </Link>
             </Nav>
             <Nav>
               <MySelect />

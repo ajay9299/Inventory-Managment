@@ -1,13 +1,17 @@
 import axios from "axios";
 
 /** Fetch items values based on departmentId*/
-export const getItemsService = async () => {
+export const getItemsService = async (currentPage) => {
   console.log("path", `${process.env.NEXT_PUBLIC_API_BASE_URL}items`);
+ 
+  console.log("currentPage", currentPage);
 
-  let config = {
+  let config = {  
     method: "get",
     maxBodyLength: Infinity,
-    url: `${process.env.NEXT_PUBLIC_API_BASE_URL}items`,
+    url: `${
+      process.env.NEXT_PUBLIC_API_BASE_URL
+    }items?page=${currentPage}&limit=${5}`,
     headers: {},
   };
   return await axios.request(config);

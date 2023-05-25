@@ -1,3 +1,4 @@
+import Loader from "@/components/Loader";
 import MenuBar from "@/components/MenuBar";
 import PageHeading from "@/components/PageHeading";
 import TableComponent from "@/components/Table";
@@ -14,6 +15,7 @@ import {
   Container,
   Form,
   OverlayTrigger,
+  Pagination,
   Tooltip,
 } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
@@ -30,6 +32,9 @@ const Store = () => {
     itemName: "",
   });
   const [userObject, setUserObject] = useState({});
+  const [isLoaderLoading, setLoaderLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(100);
 
   async function addNewItem() {
     try {
@@ -56,7 +61,8 @@ const Store = () => {
         icon: true,
         type: "success",
       });
-      getItems();
+      setCurrentPage(currentPage);
+      getItems(currentPage);
     }
     setShow(false);
   }
@@ -94,8 +100,9 @@ const Store = () => {
     const apiResponse = await updateItem(itemId, itemName);
     if (apiResponse.status === 200) {
       toast("Item updated successfully");
-      getItems();
     }
+    setCurrentPage(currentPage);
+    getItems();
     setShow(false);
   }
 
@@ -103,7 +110,7 @@ const Store = () => {
 
   let tableBody = items?.map((item, index) => (
     <tr key={index}>
-      <td>{index + 1}</td>
+      <td>{5 * (currentPage - 1) + 1 + index}</td>
       <td>{item.itemName}</td>
       <td style={{ display: "flex", justifyContent: "flex-end" }}>
         <OverlayTrigger
@@ -159,10 +166,13 @@ const Store = () => {
   ));
 
   /** Fetch items */
-  async function getItems() {
-    const apiResponse = await getItemsService();
+  async function getItems(currentPage) {
+    const apiResponse = await getItemsService(currentPage);
     if (apiResponse.status === 200) {
       setItems(apiResponse.data.data);
+      setTimeout(() => {
+        setLoaderLoading(true);
+      }, 1000);
     }
   }
 
@@ -178,84 +188,135 @@ const Store = () => {
     });
   }, []);
 
+  //  const startIndex = (currentPage - 1) * limit;
+  //  const endIndex = startIndex + limit;
+  //  const currentData = data.slice(startIndex, endIndex);
+
+  const handlePageChange = (pageNumber) => {
+    console.log("pageNumber", pageNumber);
+    setCurrentPage(pageNumber);
+    setLoaderLoading(false);
+    getItems(pageNumber);
+  };
+
+  const renderPaginationItems = () => {
+    const items = [];
+    for (let pageNumber = 1; pageNumber <= 12; pageNumber++) {
+      items.push(
+        <Pagination.Item
+          key={pageNumber}
+          active={pageNumber === currentPage}
+          onClick={() => handlePageChange(pageNumber)}
+        >
+          {pageNumber}
+        </Pagination.Item>
+      );
+    }
+    return items;
+  };
+
+  const paginationBody = (
+    <>
+      <Pagination.Prev
+        disabled={currentPage === 1}
+        onClick={() => handlePageChange(currentPage - 1)}
+      />
+      {renderPaginationItems()}
+      <Pagination.Next
+        disabled={currentPage === totalPage}
+        onClick={() => handlePageChange(currentPage + 1)}
+      />
+    </>
+  );
+
   return (
     <>
-      <MenuBar loadUser={userObject} />
-      <ToastContainer />
-      <ModalBox
-        disabled={isLoading}
-        isOpen={show}
-        title={
-          buttonClicked === "update"
-            ? "Edit Item"
-            : buttonClicked === "delete"
-            ? "Delete Item"
-            : "Info"
-        }
-        actionLabel={
-          buttonClicked === "update"
-            ? "Update"
-            : buttonClicked === "delete"
-            ? "Delete"
-            : "Info"
-        }
-        buttonColor={
-          buttonClicked === "update"
-            ? "btn btn-primary"
-            : buttonClicked === "delete"
-            ? "btn btn-danger"
-            : "btn btn-info"
-        }
-        secondaryActionLabel="Close"
-        secondaryAction={() => setShow(false)}
-        onClose={() => setShow(false)}
-        onSubmit={() =>
-          buttonClicked === "update"
-            ? handleUpdate(selectedItemInfo.itemId, selectedItemInfo.itemName)
-            : buttonClicked === "delete"
-            ? handleDelete(selectedItemInfo.itemId)
-            : "btn btn-info"
-        }
-        body={
-          buttonClicked === "update"
-            ? bodyContent
-            : buttonClicked === "delete"
-            ? deleteBody
-            : "btn btn-info"
-        }
-      />
+      <MenuBar loadUser={userObject}/>
+      {!isLoaderLoading ? (
+        <Loader />
+      ) : (
+        <>
+          <ToastContainer />
+          <ModalBox
+            disabled={isLoading}
+            isOpen={show}
+            title={
+              buttonClicked === "update"
+                ? "Edit Item"
+                : buttonClicked === "delete"
+                ? "Delete Item"
+                : "Info"
+            }
+            actionLabel={
+              buttonClicked === "update"
+                ? "Update"
+                : buttonClicked === "delete"
+                ? "Delete"
+                : "Info"
+            }
+            buttonColor={
+              buttonClicked === "update"
+                ? "btn btn-primary"
+                : buttonClicked === "delete"
+                ? "btn btn-danger"
+                : "btn btn-info"
+            }
+            secondaryActionLabel="Close"
+            secondaryAction={() => setShow(false)}
+            onClose={() => setShow(false)}
+            onSubmit={() =>
+              buttonClicked === "update"
+                ? handleUpdate(
+                    selectedItemInfo.itemId,
+                    selectedItemInfo.itemName
+                  )
+                : buttonClicked === "delete"
+                ? handleDelete(selectedItemInfo.itemId)
+                : "btn btn-info"
+            }
+            body={
+              buttonClicked === "update"
+                ? bodyContent
+                : buttonClicked === "delete"
+                ? deleteBody
+                : "btn btn-info"
+            }
+          />
 
-      <PageHeading pageHeading={"Items and history"} />
-      <Container style={{ width: "80%" }}>
-        <Form>
-          <Form.Group>
-            <Form.Label>Item name</Form.Label>
-            <Form.Control
-              as="input"
-              value={itemName}
-              placeholder="Enter the item name"
-              onChange={(e) => {
-                setItemName(e.target.value);
-              }}
-            ></Form.Control>
-          </Form.Group>
-          <Form.Group>
-            <Button
-              variant="primary"
-              style={{ marginTop: "10px" }}
-              onClick={addNewItem}
-            >
-              Add Item
-            </Button>
-          </Form.Group>
-        </Form>
-        <TableComponent
-          tableHeading={tableHeading}
-          column={column}
-          items={items}
-          tableBody={tableBody}
-        />
-      </Container>
+          <PageHeading pageHeading={"Items and history"} />
+          <Container style={{ width: "80%" }}>
+            <Form>
+              <Form.Group>
+                <Form.Label>Item name</Form.Label>
+                <Form.Control
+                  as="input"
+                  value={itemName}
+                  placeholder="Enter the item name"
+                  onChange={(e) => {
+                    setItemName(e.target.value);
+                  }}
+                ></Form.Control>
+              </Form.Group>
+              <Form.Group>
+                <Button
+                  variant="secondary"
+                  style={{ marginTop: "10px" }}
+                  onClick={addNewItem}
+                >
+                  Add Item
+                </Button>
+              </Form.Group>
+            </Form>
+            <TableComponent
+              tableHeading={tableHeading}
+              column={column}
+              items={items}
+              tableBody={tableBody}
+              paginationBody={paginationBody}
+            />
+          </Container>
+        </>
+      )}
     </>
   );
 };
