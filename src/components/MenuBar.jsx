@@ -31,18 +31,24 @@ const MenuBar = (loadUser) => {
 
   function loginUser(selectedUser) {
     console.log(selectedUser.value);
-    localStorage.setItem("userId", selectedUser.value);
+    localStorage.setItem("userId", selectedUser.value.userId);
+    localStorage.setItem("departmentId", selectedUser.value.departmentId);
   }
 
   const MySelect = () => (
-    <Select
-      options={users?.map((user) => {
-        return { value: user._id, label: user.userName };
-      })}
-      styles={customStyles}
-      placeholder="Select User"
-      onChange={loginUser}
-    />
+    <>
+      <Select
+        options={users?.map((user) => {
+          return {
+            value: { userId: user._id, departmentId: user.departmentId._id },
+            label: user.userName,
+          };
+        })}
+        styles={customStyles}
+        placeholder="Select User"
+        onChange={loginUser}
+      />
+    </>
   );
   return (
     <>

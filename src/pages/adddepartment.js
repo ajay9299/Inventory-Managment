@@ -1,15 +1,14 @@
+import Loader from "@/components/Loader";
 import MenuBar from "@/components/MenuBar";
 import PageHeading from "@/components/PageHeading";
 import TableComponent from "@/components/Table";
 import ModalBox from "@/components/modals/ModalBox";
 import {
   createDepartment,
-  createDropDownByKey,
   deleteDepartment,
   getDepartmentsService,
   updateDepartment,
 } from "@/services/department.service";
-import { updateItem } from "@/services/item.service";
 import { getUsersService } from "@/services/user.service";
 import React, { useEffect, useState } from "react";
 import {
@@ -36,6 +35,7 @@ const AddDepartment = () => {
   const [users, setUsers] = useState([]);
   const [tableHeading, setTableHeading] = useState("Registered Departments");
   const [departments, setDepartments] = useState([]);
+  const [isLoaderLoading, setLoaderLoading] = useState(false);
 
   const [selectedDepartmentInfo, setSelectDepartmentInfo] = useState({
     departmentId: "",
@@ -50,6 +50,9 @@ const AddDepartment = () => {
     const apiResponse = await getUsersService();
     if (apiResponse.status === 200) {
       setUsers(apiResponse.data.data);
+      setTimeout(() => {
+        setLoaderLoading(true);
+      }, 2000);
     }
   }
   useEffect(() => {
@@ -245,101 +248,115 @@ const AddDepartment = () => {
   return (
     <>
       <MenuBar />
-      <ToastContainer />
-      <ModalBox
-        disabled={isLoading}
-        isOpen={show}
-        title={
-          buttonClicked === "update"
-            ? "Edit Department"
-            : buttonClicked === "delete"
-            ? "Delete Department"
-            : "Info"
-        }
-        actionLabel={
-          buttonClicked === "update"
-            ? "Update"
-            : buttonClicked === "delete"
-            ? "Delete"
-            : "Info"
-        }
-        buttonColor={
-          buttonClicked === "update"
-            ? "btn btn-primary"
-            : buttonClicked === "delete"
-            ? "btn btn-danger"
-            : "btn btn-info"
-        }
-        secondaryActionLabel="Close"
-        secondaryAction={() => setShow(false)}
-        onClose={() => setShow(false)}
-        onSubmit={() =>
-          buttonClicked === "update"
-            ? handleUpdate(
-                selectedDepartmentInfo.departmentId,
-                selectedDepartmentInfo.departmentName,
-                selectedDepartmentInfo.departmentHeadId
-              )
-            : buttonClicked === "delete"
-            ? handleDelete(selectedDepartmentInfo.departmentId)
-            : "btn btn-info"
-        }
-        body={
-          buttonClicked === "update"
-            ? bodyContent
-            : buttonClicked === "delete"
-            ? deleteBody
-            : "btn btn-info"
-        }
-      />
-      <PageHeading pageHeading={"Add New Department"} />
-      <Container style={{ width: "80%" }}>
-        <Form>
-          <Form.Group style={{ marginBottom: "10px" }}>
-            <Form.Label>Department name</Form.Label>
-            <Form.Control
-              as="input"
-              value={department}
-              placeholder="Enter department name"
-              onChange={(e) => setDepartment(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+      {!isLoaderLoading ? (
+        <Loader />
+      ) : (
+        <>
+          {" "}
+          <ToastContainer />
+          <ModalBox
+            disabled={isLoading}
+            isOpen={show}
+            title={
+              buttonClicked === "update"
+                ? "Edit Department"
+                : buttonClicked === "delete"
+                ? "Delete Department"
+                : "Info"
+            }
+            actionLabel={
+              buttonClicked === "update"
+                ? "Update"
+                : buttonClicked === "delete"
+                ? "Delete"
+                : "Info"
+            }
+            buttonColor={
+              buttonClicked === "update"
+                ? "btn btn-primary"
+                : buttonClicked === "delete"
+                ? "btn btn-danger"
+                : "btn btn-info"
+            }
+            secondaryActionLabel="Close"
+            secondaryAction={() => setShow(false)}
+            onClose={() => setShow(false)}
+            onSubmit={() =>
+              buttonClicked === "update"
+                ? handleUpdate(
+                    selectedDepartmentInfo.departmentId,
+                    selectedDepartmentInfo.departmentName,
+                    selectedDepartmentInfo.departmentHeadId
+                  )
+                : buttonClicked === "delete"
+                ? handleDelete(selectedDepartmentInfo.departmentId)
+                : "btn btn-info"
+            }
+            body={
+              buttonClicked === "update"
+                ? bodyContent
+                : buttonClicked === "delete"
+                ? deleteBody
+                : "btn btn-info"
+            }
+          />
+          <PageHeading pageHeading={"Add New Department"} />
+          <Container style={{ width: "80%" }}>
+            <Form>
+              <Form.Group style={{ marginBottom: "10px" }}>
+                <Form.Label>Department name</Form.Label>
+                <Form.Control
+                  as="input"
+                  value={department}
+                  placeholder="Enter department name"
+                  onChange={(e) => setDepartment(e.target.value)}
+                ></Form.Control>
+              </Form.Group>
 
-          <Form.Group>
-            <Form.Label>Select Department head</Form.Label>
-            <Form.Control
-              as="select"
-              value={departmentHeadId}
-              onChange={(e) => {
-                console.log("Event", e);
-                setDepartmentHead(e.target.value);
-              }}
-            >
-              <option value="">Select...</option>
-              {users.map((user) => {
-                return (
-                  <option value={user._id} name={user.userName} key={user._id}>
-                    {user.userName}
-                  </option>
-                );
-              })}
-              {/* Add username options */}
-            </Form.Control>
-          </Form.Group>
-          <Form.Group>
-            <div style={{ marginTop: "10px" }}>
-              <Button variant="secondary" onClick={() => addNewDepartment()}>
-                Add Department
-              </Button>
-            </div>
-          </Form.Group>
-        </Form>
-        <TableComponent
-          tableHeading={tableHeading}
-          column={column}
-          tableBody={tableBody}
-        />
-      </Container>
+              <Form.Group>
+                <Form.Label>Select Department head</Form.Label>
+                <Form.Control
+                  as="select"
+                  value={departmentHeadId}
+                  onChange={(e) => {
+                    console.log("Event", e);
+                    setDepartmentHead(e.target.value);
+                  }}
+                >
+                  <option value="">Select...</option>
+                  {users.map((user) => {
+                    return (
+                      <option
+                        value={user._id}
+                        name={user.userName}
+                        key={user._id}
+                      >
+                        {user.userName}
+                      </option>
+                    );
+                  })}
+                  {/* Add username options */}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group>
+                <div style={{ marginTop: "10px" }}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => addNewDepartment()}
+                  >
+                    Add Department
+                  </Button>
+                </div>
+              </Form.Group>
+            </Form>
+            <TableComponent
+              tableHeading={tableHeading}
+              column={column}
+              tableBody={tableBody}
+            />
+          </Container>
+        </>
+      )}
     </>
   );
 };

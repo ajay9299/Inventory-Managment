@@ -5,13 +5,13 @@ export default function Home() {
   return (
     <Layout>
       <div className="d-flex gap-4 justify-content-evenly flex-wrap">
-        <CardElem buttonLabel="My Dashboard" buttonLink="/mydashboard" />
+        {/* <CardElem buttonLabel="My Dashboard" buttonLink="/mydashboard" /> */}
         <CardElem buttonLabel="Add User" buttonLink="/adduser" />
         <CardElem buttonLabel="Add Department" buttonLink="/adddepartment" />
-        <CardElem
+        {/* <CardElem
           buttonLabel="Add Department Head"
           buttonLink="/adddepartmenthead"
-        />
+        /> */}
       </div>
     </Layout>
   );

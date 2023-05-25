@@ -154,7 +154,7 @@ const RaiseRequest = () => {
 
   return (
     <>
-      <MenuBar />
+      <MenuBar  />
       <PageHeading pageHeading={"Raise New Request"} />
       <Container style={{ width: "80%" }}>
         <Form>
