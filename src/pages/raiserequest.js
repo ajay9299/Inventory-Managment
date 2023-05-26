@@ -1,9 +1,16 @@
+import Loader from "@/components/Loader";
 import MenuBar from "@/components/MenuBar";
 import PageHeading from "@/components/PageHeading";
-import { getItemsByDepartmentId } from "@/services/item.service";
-import { getUsersService } from "@/services/user.service";
+import { getItemsService } from "@/services/item.service";
 import React, { useEffect, useState } from "react";
-import { Button, Container, Form, Table } from "react-bootstrap";
+import {
+  Button,
+  Container,
+  Form,
+  OverlayTrigger,
+  Table,
+  Tooltip,
+} from "react-bootstrap";
 
 const RaiseRequest = () => {
   /** States */
@@ -11,19 +18,25 @@ const RaiseRequest = () => {
     useState(""); /** Username remain fix for per request.*/
   const [department, setDepartment] =
     useState(""); /** Department remain fix for per request.*/
-  const [departmentId, setDepartmentId] = useState("");
-
-  const [data, setData] = useState(
-    []
-  ); /**Data contains all data related to items. */
+  const [isLoaderLoading, setLoaderLoading] = useState(false);
+  const [itemCount, setItemCount] = useState(1);
+  const [itemId, setItemId] = useState("");
+  const [itemName, setItemName] = useState("");
+  const [data, setData] = useState([]);
+  /**Data contains all data related to items. */
+  const [departmentChange, setDepartmentChange] = useState("");
+  const [column, setColumn] = useState([
+    "S.No.",
+    "ItemName",
+    "ItemQuantity",
+    "Action",
+  ]);
 
   const [items, setItems] = useState([
-    { item: "", count: 0 },
+    { itemName: "", itemCount: 0 },
   ]); /** Items contains all data related to added dynamic items. */
 
   /** States for api data storages */
-  const [users, setUsers] = useState([]);
-  const [departments, setDepartments] = useState([]);
   const [products, setProducts] = useState([]);
   const [userObject, setUserObject] = useState({});
 
@@ -37,6 +50,11 @@ const RaiseRequest = () => {
     }
   };
 
+  /** Load department*/
+  function loadDepartment(department) {
+    setDepartmentChange(department);
+  }
+
   /** Handle dynamic removed items state */
   const handleRemoveItem = (index) => {
     const updatedItems = [...items];
@@ -47,7 +65,6 @@ const RaiseRequest = () => {
     setItems(updatedItems);
   };
 
-  //
   const handleItemChange = (index, item) => {
     const updatedItems = [...items];
     updatedItems[index].item = item;
@@ -72,35 +89,19 @@ const RaiseRequest = () => {
   };
 
   /** Handle single item add operation that is used to add item in table. */
-  const handleAddSingleItem = (index) => {
-    const { item, count, _id } = items[index];
-
-    console.log(item, count, _id);
-
-    if (!username || !department) {
-      alert("Sorry please select valid username and department...");
-      return;
-    }
-
-    if (!item || !count) {
-      alert("Sorry you can't add empty item...");
-      return;
-    }
-
-    const indexT = data.findIndex((obj) => obj.item === item);
-    if (indexT > -1) {
-      const updatedItems = data.map((obj) => {
-        if (obj.item === item) {
-          return { ...obj, count };
-        }
-        return obj;
-      });
-
-      setData(updatedItems);
-    } else {
-      setData([...data, { username, department, item, count }]);
-    }
+  const handleAddSingleItem = () => {
+    console.log("itemCount-------->", itemCount);
+    console.log("itemName-------->", itemName);
+    console.log("itemId-------->", itemId);
+    console.log("data------------->", data);
+    setItems([...items, { itemName, itemCount }]);
   };
+
+  function handleItemId(itemId, itemName) {
+    setItemId(itemId);
+    setItemName(itemName);
+    console.log("<><><><><><><>", itemId, "<><><><><><><>", itemName);
+  }
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -111,190 +112,153 @@ const RaiseRequest = () => {
       label: userName,
       departmentId: departmentId,
     });
+    getItems();
+  }, [departmentChange]);
 
-    const getUsers = async () => {
-      try {
-        const apiResponse = await getUsersService();
-        console.log("api", apiResponse);
-        if (apiResponse.status === 200) {
-          console.log(apiResponse.data.data);
-          setUsers(apiResponse.data.data);
-        }
-      } catch (error) {
-        alert(error);
-      }
-    };
-    getUsers();
-  }, []);
-
-  useEffect(() => {
-    const getProducts = async () => {
-      try {
-        const apiResponse = await getItemsByDepartmentId(departmentId);
-
-        console.log("apiResponse", apiResponse);
-        if (apiResponse.status === 200) {
-          console.log(apiResponse.data.data);
-          setProducts(apiResponse.data.data);
-        }
-      } catch (error) {
-        alert(error);
-      }
-    };
-    departmentId ? getProducts() : null;
-  }, [username, department]);
-
-  function setUserNameAndDepartmentName(userId) {
-    if (userId) {
-      const [userInfo] = users.filter((user) => user._id === userId);
-      setUsername(userId);
-      setDepartment(userInfo.departmentId.value);
-      setDepartmentId(userInfo.departmentId._id);
-    } else {
-      setUsername("");
-      setDepartment("");
+  /** Fetch items */
+  async function getItems(currentPage) {
+    const apiResponse = await getItemsService(currentPage);
+    if (apiResponse.status === 200) {
+      setProducts(apiResponse.data.data);
+      setTimeout(() => {
+        setLoaderLoading(true);
+      }, 1000);
     }
   }
 
+  const renderTooltip = (text) => <Tooltip id="tooltip">{text}</Tooltip>;
   /** Handle submit request operation */
   const submitRequest = () => {
     setUsername("");
     setDepartment("");
   };
 
+  let tableBody = items?.map((item, index) => (
+    <tr key={index}>
+      <td>{index}</td>
+      <td>{item.itemName}</td>
+      <td>{item.itemCount}</td>
+
+      <td style={{ display: "flex", justifyContent: "flex-end" }}>
+        <OverlayTrigger
+          placement="top"
+          delay={{ show: 400, hide: 400 }}
+          overlay={renderTooltip("Edit")}
+        >
+          <Button
+            variant="primary"
+            onClick={() => {
+              onUpdate(user._id, user.userName, user.departmentId._id);
+              setButtonClicked("update");
+            }}
+            style={{ marginRight: "10px" }}
+          >
+            <span className="material-symbols-outlined">edit</span>
+          </Button>
+        </OverlayTrigger>
+        {"  "}
+        <OverlayTrigger
+          placement="top"
+          delay={{ show: 400, hide: 400 }}
+          overlay={renderTooltip("Delete")}
+        >
+          <Button
+            variant="danger"
+            onClick={() => {
+              onUpdate(user._id, user.userName, user.departmentId._id);
+              setButtonClicked("delete");
+            }}
+            style={{ marginRight: "10px" }}
+          >
+            <span className="material-symbols-outlined">delete</span>
+          </Button>
+        </OverlayTrigger>{" "}
+        <OverlayTrigger
+          placement="top"
+          delay={{ show: 400, hide: 400 }}
+          overlay={renderTooltip("Info")}
+        >
+          <Button
+            variant="info"
+            onClick={() => {
+              onUpdate(user._id, user.userName, user.departmentId._id);
+              setButtonClicked("info");
+            }}
+          >
+            <span class="material-symbols-outlined">visibility</span>
+          </Button>
+        </OverlayTrigger>
+      </td>
+    </tr>
+  ));
+
   return (
     <>
-      <MenuBar loadUser={userObject} />
-      <PageHeading pageHeading={"Raise New Request"} />
-      <Container style={{ width: "80%" }}>
-        <Form>
-          <Form.Group>
-            <Form.Label>Select Username:</Form.Label>
-            <Form.Control
-              as="select"
-              value={username}
-              onChange={(e) => {
-                console.log("Event", e);
-                setUserNameAndDepartmentName(e.target.value);
-              }}
-            >
-              <option value="">Select...</option>
-              {users.map((user) => {
-                return (
-                  <option value={user._id} name={user.userName} key={user._id}>
-                    {user.userName}
-                  </option>
-                );
-              })}
-              {/* Add username options */}
-            </Form.Control>
-          </Form.Group>
+      <MenuBar loadUser={userObject} loadDepartment={loadDepartment} />
+      {!isLoaderLoading ? (
+        <Loader />
+      ) : (
+        <>
+          <PageHeading pageHeading={"Raise New Request"} />
+          <Container style={{ width: "80%" }}>
+            <Form>
+              <Form.Group style={{ marginTop: "10px" }}>
+                <Form.Label>Department:</Form.Label>
+                <Form.Control
+                  as="input"
+                  value={userObject?.departmentId?.departmentName}
+                  disabled
+                  onChange={(e) => setDepartment(e.target.value)}
+                ></Form.Control>
+              </Form.Group>
 
-          <Form.Group style={{ marginTop: "10px" }}>
-            <Form.Label>Department:</Form.Label>
-            <Form.Control
-              as="input"
-              value={department}
-              disabled
-              onChange={(e) => setDepartment(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
-
-          <Form.Group style={{ marginTop: "10px" }}>
-            {items.map((item, index) => (
-              <div key={index}>
-                <Form.Group>
-                  <Form.Label>Select Item:</Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={item.itemName}
-                    onChange={(e) => handleItemChange(index, e.target.value)}
-                  >
-                    <option value="">Select...</option>
-                    {products?.map((product) => {
-                      return (
-                        <option value={product._id} key={product._id}>
-                          {product.itemName}
-                        </option>
-                      );
-                    })}
-                    {/* Add item options */}
-                  </Form.Control>
-                </Form.Group>
-
-                <Form.Group>
-                  <div style={{ marginTop: "10px" }}>
-                    <Button
-                      variant="secondary"
-                      onClick={() => handleCountChange(index, item.count - 1)}
-                      style={{ marginRight: "5px" }}
-                    >
-                      -
-                    </Button>
-                    <span>{item.count}</span>
-                    <Button
-                      variant="secondary"
-                      onClick={() => handleCountChange(index, item.count + 1)}
-                      style={{ marginLeft: "5px", marginRight: "20px" }}
-                    >
-                      +
-                    </Button>
-                    <Button
-                      variant="success"
-                      onClick={() => handleAddSingleItem(index)}
-                      style={{ marginLeft: "5px", marginRight: "20px" }}
-                    >
-                      Add
-                    </Button>
-                    <Button
-                      variant="danger"
-                      onClick={() => handleRemoveItem(index)}
-                    >
-                      Remove Item
-                    </Button>
-                  </div>
-                </Form.Group>
-              </div>
-            ))}
-
-            <Button
-              variant="primary"
-              onClick={handleAddItem}
-              style={{ marginTop: "10px" }}
-            >
-              Add More Item
-            </Button>
-          </Form.Group>
-          <Button
-            variant="secondary"
-            onClick={submitRequest}
-            style={{ marginTop: "10px", color: "white" }}
-          >
-            Submit Request
-          </Button>
-        </Form>
-
-        <Table striped bordered hover style={{ marginTop: "10px" }}>
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Department</th>
-              <th>Item</th>
-              <th>Count</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item, index) => (
-              <tr key={index}>
-                <td>{username}</td>
-                <td>{item.department}</td>
-                <td>{item.item}</td>
-                <td>{item.count}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Container>
+              <Form.Group style={{ marginTop: "10px" }}>
+                <Form.Label>Select Item:</Form.Label>
+                <Form.Control
+                  as="select"
+                  value={itemId}
+                  onChange={(event) => {
+                    const selectedOption =
+                      event.target.options[event.target.selectedIndex];
+                    // Access the custom attribute
+                    const customAttribute = selectedOption.getAttribute("data");
+                    handleItemId(event.target.value, customAttribute);
+                  }}
+                >
+                  <option value="">Select...</option>
+                  {products?.map((product) => {
+                    return (
+                      <option
+                        value={product._id}
+                        key={product._id}
+                        data={product.itemName}
+                      >
+                        {product.itemName}
+                      </option>
+                    );
+                  })}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group style={{ width: "20%", marginTop: "10px" }}>
+                <Form.Label>Input item quantity</Form.Label>
+                <Form.Control
+                  as="input"
+                  type="number"
+                  value={itemCount}
+                  onChange={(e) => setItemCount(e.target.value)}
+                ></Form.Control>
+                <Button
+                  variant="success"
+                  onClick={() => handleAddSingleItem()}
+                  style={{ marginTop: "10px" }}
+                >
+                  Add Item
+                </Button>
+              </Form.Group>
+            </Form>
+          </Container>
+        </>
+      )}
     </>
   );
 };

@@ -1,15 +1,15 @@
 import { getUsersService } from "@/services/user.service";
 import Link from "next/link";
+
 import React, { useEffect, useState } from "react";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import Select from "react-select";
-const MenuBar = ({ loadUser }) => {
+const MenuBar = ({ loadUser, loadDepartment }) => {
   const [users, setUsers] = useState([]);
   const [selectedOption, setSelectedOption] = useState({});
 
   useEffect(() => {
     getUsers();
-    console.log("<<<<>>>>", loadUser);
     setSelectedOption(loadUser);
   }, [loadUser]);
 
@@ -33,7 +33,6 @@ const MenuBar = ({ loadUser }) => {
   };
 
   function loginUser(selectedUser) {
-    console.log("---------", selectedUser);
     localStorage.remove;
     setSelectedOption({
       value: selectedUser.value,
@@ -46,6 +45,8 @@ const MenuBar = ({ loadUser }) => {
       "departmentId",
       JSON.stringify(selectedUser.departmentId)
     );
+
+    loadDepartment(selectedUser.departmentId.departmentName);
   }
 
   const MySelect = () => (
@@ -85,7 +86,7 @@ const MenuBar = ({ loadUser }) => {
                 Home
               </Link>
               <Link
-                href="/raiserequest"
+                href="/request"
                 style={{
                   fontSize: "20px",
                   color: "#fff",
