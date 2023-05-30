@@ -22,10 +22,9 @@ const Request = () => {
   const [tableHeading, setTableHeading] = useState("Request History");
   const [requests, setRequests] = useState([]);
   const [buttonClicked, setButtonClicked] = useState("");
-  const [test, setTest] = useState(false);
 
   useEffect(() => {
-    console.log("first useEffect called");
+    console.log("?????????????????");
     const userId = localStorage.getItem("userId");
     const userName = localStorage.getItem("userName");
     const departmentId = JSON.parse(localStorage.getItem("departmentId"));
@@ -36,12 +35,19 @@ const Request = () => {
     });
   }, [departmentChange]);
 
-  async function getRequestHistoryFunction(userInfo) {
-    const apiResponse = await getRequestHistory(userInfo);
+  async function getRequestHistoryFunction() {
+    const userId = localStorage.getItem("userId");
+    const departmentId = JSON.parse(localStorage.getItem("departmentId"))._id;
+    console.log("<><><<<><><>>", userId, departmentId);
+    const apiResponse = await getRequestHistory({ userId, departmentId });
+    console.log("apiResponse--------------->", apiResponse);
     if (apiResponse.status === 200) {
       if (!apiResponse.data.data?.documents) {
+        setRequests([]);
+        setLoaderLoading(true);
         return;
       }
+      console.log("data api call");
       setLoaderLoading(true);
       setRequests(apiResponse.data.data.documents);
     }
@@ -49,15 +55,16 @@ const Request = () => {
 
   // getRequestHistory;
   useEffect(() => {
-    console.log("first useEffect called");
-    const userId = localStorage.getItem("userId");
-    const departmentId = JSON.parse(localStorage.getItem("departmentId"))._id;
-    getRequestHistoryFunction({ userId, departmentId });
-  }, [departmentChange]);
+    console.log("RequestHistory--------------->");
+    getRequestHistoryFunction();
+  }, []);
 
   /** Load department*/
   function loadDepartment(department) {
+    console.log("I am changing");
     setDepartmentChange(department);
+    setLoaderLoading(false);
+    getRequestHistoryFunction();
   }
 
   const renderTooltip = (text) => <Tooltip id="tooltip">{text}</Tooltip>;
