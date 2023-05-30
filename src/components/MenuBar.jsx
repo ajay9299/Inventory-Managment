@@ -9,18 +9,22 @@ const MenuBar = ({ loadUser, loadDepartment }) => {
   const [selectedOption, setSelectedOption] = useState({});
 
   useEffect(() => {
+    console.log("useEffect called... filled menu bar");
     getUsers();
     setSelectedOption(loadUser);
   }, [loadUser]);
 
   /** Fetch users */
   async function getUsers() {
+    console.log("<<<<123123>>>>");
     const apiResponse = await getUsersService();
+    console.log("<<<<<apiResponse>>>>", apiResponse);
     if (apiResponse.status === 200) {
       setUsers(apiResponse.data.data);
     }
   }
   useEffect(() => {
+    console.log("useEffect called... empty menu bar");
     getUsers();
   }, []);
 

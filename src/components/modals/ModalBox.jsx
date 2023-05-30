@@ -66,13 +66,15 @@ const ModalBox = ({
             {secondaryActionLabel}
           </Button>
         )}
-        <Button
-          disabled={disabled}
-          className={buttonColor}
-          onClick={handleSubmit}
-        >
-          {actionLabel}
-        </Button>
+        {secondaryAction && secondaryActionLabel && (
+          <Button
+            disabled={disabled}
+            className={buttonColor}
+            onClick={handleSubmit}
+          >
+            {actionLabel}
+          </Button>
+        )}
       </Modal.Footer>
     </Modal>
   );
