@@ -34,7 +34,7 @@ export const getItemInfoBasedOnUserInformation = async (info) => {
 
 export const getRequestHistory = async (userInfo) => {
   try {
-    console.log("userInfo",userInfo)
+    console.log("userInfo", userInfo);
     let data = JSON.stringify(userInfo);
     let config = {
       method: "post",
@@ -42,6 +42,21 @@ export const getRequestHistory = async (userInfo) => {
       url: "http://localhost:3001/api/v1/requests/get-items-count-with-status",
       headers: { "Content-Type": "application/json" },
       data: data,
+    };
+    return await axios.request(config);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getRequestInfoById = async (requestId) => {
+  try {
+    const axios = require("axios");
+    let config = {
+      method: "get",
+      maxBodyLength: Infinity,
+      url: `http://localhost:3001/api/v1/requests/get-item-info-by-itemId/${requestId}`,
+      headers: {},
     };
     return await axios.request(config);
   } catch (error) {

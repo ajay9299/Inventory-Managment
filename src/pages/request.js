@@ -1,27 +1,39 @@
 import Loader from "@/components/Loader";
 import MenuBar from "@/components/MenuBar";
 import TableComponent from "@/components/Table";
-import { getRequestHistory } from "@/services/request.service";
+import ModalBox from "@/components/modals/ModalBox";
+import {
+  getRequestHistory,
+  getRequestInfoById,
+} from "@/services/request.service";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import { Button, Container, OverlayTrigger, Tooltip } from "react-bootstrap";
+import {
+  Button,
+  Container,
+  OverlayTrigger,
+  Table,
+  Tooltip,
+} from "react-bootstrap";
 
 const Request = () => {
   const router = useRouter();
+  const [show, setShow] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [userObject, setUserObject] = useState({});
   const [isLoaderLoading, setLoaderLoading] = useState(false);
   const [departmentChange, setDepartmentChange] = useState("");
   const [column, setColumn] = useState([
     "S.No.",
     "Total Requested Item",
-    "Status",
     "CreatedAt",
     "Action",
   ]);
   const [tableHeading, setTableHeading] = useState("Request History");
   const [requests, setRequests] = useState([]);
   const [buttonClicked, setButtonClicked] = useState("");
+  const [requestByIdInfo, setRequestByIdInfo] = useState([]);
 
   useEffect(() => {
     console.log("?????????????????");
@@ -38,16 +50,13 @@ const Request = () => {
   async function getRequestHistoryFunction() {
     const userId = localStorage.getItem("userId");
     const departmentId = JSON.parse(localStorage.getItem("departmentId"))._id;
-    console.log("<><><<<><><>>", userId, departmentId);
     const apiResponse = await getRequestHistory({ userId, departmentId });
-    console.log("apiResponse--------------->", apiResponse);
     if (apiResponse.status === 200) {
       if (!apiResponse.data.data?.documents) {
         setRequests([]);
         setLoaderLoading(true);
         return;
       }
-      console.log("data api call");
       setLoaderLoading(true);
       setRequests(apiResponse.data.data.documents);
     }
@@ -55,13 +64,11 @@ const Request = () => {
 
   // getRequestHistory;
   useEffect(() => {
-    console.log("RequestHistory--------------->");
     getRequestHistoryFunction();
   }, []);
 
   /** Load department*/
   function loadDepartment(department) {
-    console.log("I am changing");
     setDepartmentChange(department);
     setLoaderLoading(false);
     getRequestHistoryFunction();
@@ -69,15 +76,19 @@ const Request = () => {
 
   const renderTooltip = (text) => <Tooltip id="tooltip">{text}</Tooltip>;
 
+  async function getRequestByIdFunction(requestId) {
+    console.log("<object>", requestId);
+    const apiResponse = await getRequestInfoById(requestId);
+    if (apiResponse.status === 200) {
+      console.log("..................", apiResponse.data.data.itemInfo);
+      setRequestByIdInfo(apiResponse.data.data.itemInfo);
+    }
+  }
+
   let tableBody = requests?.map((request, index) => (
     <tr key={index}>
       <td>{index + 1}</td>
       <td>{request.requiredQuantity}</td>
-      <td
-        style={{ color: `${request.status}` === "pending" ? "red" : "green" }}
-      >
-        {request.status}
-      </td>
       <td>
         {new Date(request.createdAt).toLocaleString("en-US", {
           weekday: "short",
@@ -99,12 +110,51 @@ const Request = () => {
               setButtonClicked("info");
             }}
           >
-            <span class="material-symbols-outlined">visibility</span>
+            <span
+              class="material-symbols-outlined"
+              onClick={() => {
+                setShow(true);
+                getRequestByIdFunction(request._id);
+              }}
+            >
+              visibility
+            </span>
           </Button>
         </OverlayTrigger>
       </td>
     </tr>
   ));
+
+  console.log("requestedByInfo---------------", requestByIdInfo);
+
+  const modelBody = (
+    <Table striped bordered hover style={{ marginTop: "10px" }}>
+      <thead>
+        <tr>
+          <td>S.No.</td>
+          <td>Item Name</td>
+          <td>Requested Quantity</td>
+          <td>Status</td>
+        </tr>
+      </thead>
+      <tbody>
+        {requestByIdInfo?.map((item, index) => (
+          <tr>
+            <td>{index + 1}</td>
+            <td>{item.itemId.itemName}</td>
+            <td>{item.requiredQuantity}</td>
+            <td
+              style={{
+                color: `${item.status}` === "pending" ? "red" : "green",
+              }}
+            >
+              {item.status}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  );
 
   return (
     <>
@@ -113,6 +163,14 @@ const Request = () => {
         <Loader />
       ) : (
         <>
+          <ModalBox
+            disabled={isLoading}
+            isOpen={show}
+            title="Request Info"
+            secondaryAction={() => setShow(false)}
+            onClose={() => setShow(false)}
+            body={modelBody}
+          />
           <div
             style={{
               display: "flex",
